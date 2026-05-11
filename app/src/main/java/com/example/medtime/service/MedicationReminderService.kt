@@ -32,11 +32,21 @@ class MedicationReminderService : Service() {
     }
 
     private fun createNotification(contentText: String): Notification {
-        // TO DO
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("MedTime")
+            .setContentText(contentText)
+            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .build()
     }
 
     private fun createNotificationChannel() {
-        // TO DO
+        val serviceChannel = NotificationChannel(
+            CHANNEL_ID,
+            "Medication Reminder Service Channel",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(serviceChannel)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

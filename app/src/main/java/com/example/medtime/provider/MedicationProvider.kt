@@ -69,7 +69,13 @@ class MedicationProvider : ContentProvider() {
     }
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
-        // TO DO
+        if (uriMatcher.match(uri) == HISTORY && values != null) {
+            historyList.add(values)
+            Log.d("MedicationProvider", "Histórico atualizado: $values")
+            context?.contentResolver?.notifyChange(uri, null)
+            return Uri.withAppendedPath(uri, historyList.size.toString())
+        }
+        return null
     }
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int = 0

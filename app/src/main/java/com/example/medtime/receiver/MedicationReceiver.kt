@@ -31,5 +31,23 @@ class MedicationReceiver : BroadcastReceiver() {
     }
 
     private fun showNotification(context: Context) {
-        // TO DO
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "Medication Alarms",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        notificationManager.createNotificationChannel(channel)
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setContentTitle("Hora do Medicamento!")
+            .setContentText("Está na hora de tomar sua dose agendada.")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID, notification)
+    }
 }

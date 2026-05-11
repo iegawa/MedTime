@@ -1,13 +1,12 @@
 package com.example.medtime
 
+package com.example.medtime
+
 import android.Manifest
-import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -27,20 +26,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.medtime.service.MedicationReminderService
 import com.example.medtime.ui.theme.MedTimeTheme
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import androidx.core.net.toUri
+import com.example.medtime.viewmodel.MedicationViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,10 +49,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(viewModel: MedicationViewModel = viewModel()) {
     val context = LocalContext.current
-    var lastUpdate by remember { mutableStateOf("Nenhuma dose registrada hoje") }
-    
+    val lastUpdate by viewModel.lastUpdate
+
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { _ -> }
@@ -90,36 +84,23 @@ fun MainScreen() {
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = "O serviço de monitoramento está ativo.")
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             Text(
                 text = "Próxima dose pendente: Paracetamol 500mg",
                 style = MaterialTheme.typography.bodyLarge
             )
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Button(
                 onClick = {
-                    val timestamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-                    val values = ContentValues().apply {
-                        put("medication_id", 1) // ID mockado do Paracetamol
-                        put("timestamp", timestamp)
-                        put("status", "TAKEN")
-                    }
-                    
-                    val historyUri = "content://com.example.medtime.provider/history".toUri()
-                    val uri = context.contentResolver.insert(historyUri, values)
-                    
-                    if (uri != null) {
-                        lastUpdate = "Dose de Paracetamol marcada como tomada às $timestamp"
-                        Toast.makeText(context, "Histórico atualizado via ContentProvider!", Toast.LENGTH_SHORT).show()
-                    }
+                    viewModel.markAsTaken()
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
             ) {
                 Text("Check: Marcar como Tomado")
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = lastUpdate,
@@ -128,7 +109,7 @@ fun MainScreen() {
             )
 
             Spacer(modifier = Modifier.height(48.dp))
-            
+
             Button(onClick = {
                 // Simulação de disparo de alarme para teste
                 val intent = Intent("com.example.medtime.ACTION_REMINDER_ALARM").apply {
